@@ -1,8 +1,9 @@
 locals {
   Common_tags = {
-    Environment = "${var.env}"
+    Environment = "${var.env[0]}"
     costcenter  = "${var.costcenter}"
     Role        = "${var.role}"
+    Deployment  = "Terraform"
 
   }
 

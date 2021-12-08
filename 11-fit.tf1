@@ -1,0 +1,227 @@
+resource "azurerm_resource_group" "rg-fit-dev" {
+  location = var.location
+  name     = var.rgp_fit
+
+  tags = merge(local.Common_tags, local.fit_tags)
+  #tags = local.Common_tags    
+}
+
+resource "azurerm_app_service_plan" "fit-dev-asp" {
+  name                = var.fit_dev_asp_name
+  location            = azurerm_resource_group.rg-fit-dev.location
+  resource_group_name = azurerm_resource_group.rg-fit-dev.name
+  kind                = "windows"
+
+  sku {
+    tier = "PremiumV3"
+    size = "P2v3"
+  }
+  tags = merge(local.Common_tags, local.fit_tags)
+}
+
+resource "azurerm_app_service" "fit_dev" {
+  for_each            = var.fit_dev_webapp_name
+  name                = "${each.key}-web-app"
+  app_service_plan_id = azurerm_app_service_plan.fit-dev-asp.id
+  resource_group_name = azurerm_resource_group.rg-fit-dev.name
+  location            = azurerm_resource_group.rg-fit-dev.location
+  app_settings = {
+    "platform" = "value"
+  }
+
+  tags = merge(local.Common_tags, local.fit_tags)
+}
+
+resource "azurerm_app_service_virtual_network_swift_connection" "vnetintegrationconnection_fit_dev" {
+  for_each       = azurerm_app_service.fit_dev
+  app_service_id = azurerm_app_service.fit_dev[each.key].id
+  subnet_id      = azurerm_subnet.subnet-dev-vi-fit-dev.id
+
+}
+
+resource "azurerm_private_endpoint" "fit_dev_pe" {
+  for_each            = azurerm_app_service.fit_dev
+  name                = "${each.key}-pe"
+  location            = azurerm_resource_group.rg-fit-dev.location
+  resource_group_name = azurerm_resource_group.rg-fit-dev.name
+  subnet_id           = azurerm_subnet.subnet-dev-pe-subnet.id
+  
+
+  private_dns_zone_group {
+    name                 = "privatednszonegroup"
+    private_dns_zone_ids = [azurerm_private_dns_zone.private-dns-zone.id]
+  }
+
+
+
+  private_service_connection {
+    name                           = "privateendpointconnection_fit_dev"
+    private_connection_resource_id = azurerm_app_service.fit_dev[each.key].id
+    subresource_names              = ["sites"]
+    is_manual_connection           = false
+  }
+
+  tags = merge(local.Common_tags, local.fit_tags)
+}
+
+resource "azurerm_monitor_autoscale_setting" "auto_scale_fit_dev_asp" {
+  name                = "myAutoscaleSetting_fit_dev"
+  resource_group_name = azurerm_resource_group.rg-fit-dev.name
+  location            = azurerm_resource_group.rg-fit-dev.location
+  target_resource_id  = azurerm_app_service_plan.fit-dev-asp.id
+  profile {
+    name = "default"
+    capacity {
+      default = 1
+      minimum = 1
+      maximum = 3
+    }
+    rule {
+      metric_trigger {
+        metric_name = "CpuPercentage"
+
+        metric_resource_id = azurerm_app_service_plan.fit-dev-asp.id
+        time_grain         = "PT1M"
+        statistic          = "Average"
+        time_window        = "PT5M"
+        time_aggregation   = "Average"
+        operator           = "GreaterThan"
+        threshold          = 70
+      }
+      scale_action {
+        direction = "Increase"
+        type      = "ChangeCount"
+        value     = "1"
+        cooldown  = "PT1M"
+      }
+    }
+    rule {
+      metric_trigger {
+        metric_name        = "CpuPercentage"
+        metric_resource_id = azurerm_app_service_plan.fit-dev-asp.id
+        time_grain         = "PT1M"
+        statistic          = "Average"
+        time_window        = "PT5M"
+        time_aggregation   = "Average"
+        operator           = "LessThan"
+        threshold          = 10
+      }
+      scale_action {
+        direction = "Decrease"
+        type      = "ChangeCount"
+        value     = "1"
+        cooldown  = "PT1M"
+      }
+    }
+  }
+}
+
+################################## FIT SIT #############################################
+resource "azurerm_app_service_plan" "fit-sit-asp" {
+  name                = var.fit_sit_asp_name
+  location            = azurerm_resource_group.rg-fit-dev.location
+  resource_group_name = azurerm_resource_group.rg-fit-dev.name
+  kind                = "windows"
+
+  sku {
+    tier = "PremiumV3"
+    size = "P2v3"
+  }
+  tags = merge(local.Common_tags, local.fit_tags)
+}
+
+resource "azurerm_app_service" "fit_sit" {
+  for_each            = var.fit_sit_webapp_name
+  name                = "${each.key}-web-app"
+  app_service_plan_id = azurerm_app_service_plan.fit-sit-asp.id
+  resource_group_name = azurerm_resource_group.rg-fit-dev.name
+  location            = azurerm_resource_group.rg-fit-dev.location
+  app_settings = {
+    "platform" = "value"
+  }
+
+  tags = merge(local.Common_tags, local.fit_tags)
+}
+
+resource "azurerm_app_service_virtual_network_swift_connection" "vnetintegrationconnection_fit_sit" {
+  for_each       = azurerm_app_service.fit_sit
+  app_service_id = azurerm_app_service.fit_sit[each.key].id
+  subnet_id      = azurerm_subnet.subnet-dev-vi-fit-sit.id
+
+}
+
+resource "azurerm_private_endpoint" "fit_sit_pe" {
+  for_each            = azurerm_app_service.fit_sit
+  name                = "${each.key}-pe"
+  location            = azurerm_resource_group.rg-fit-dev.location
+  resource_group_name = azurerm_resource_group.rg-fit-dev.name
+  subnet_id           = azurerm_subnet.subnet-dev-pe-subnet.id
+
+  private_dns_zone_group {
+    name                 = "privatednszonegroup"
+    private_dns_zone_ids = [azurerm_private_dns_zone.private-dns-zone.id]
+  }
+
+
+
+  private_service_connection {
+    name                           = "privateendpointconnection_fit_sit"
+    private_connection_resource_id = azurerm_app_service.fit_sit[each.key].id
+    subresource_names              = ["sites"]
+    is_manual_connection           = false
+  }
+
+  tags = merge(local.Common_tags, local.fit_tags)
+}
+
+resource "azurerm_monitor_autoscale_setting" "auto_scale_fit_sit_asp" {
+  name                = "myAutoscaleSetting_fit_sit"
+  resource_group_name = azurerm_resource_group.rg-fit-dev.name
+  location            = azurerm_resource_group.rg-fit-dev.location
+  target_resource_id  = azurerm_app_service_plan.fit-sit-asp.id
+  profile {
+    name = "default"
+    capacity {
+      default = 1
+      minimum = 1
+      maximum = 3
+    }
+    rule {
+      metric_trigger {
+        metric_name = "CpuPercentage"
+
+        metric_resource_id = azurerm_app_service_plan.fit-sit-asp.id
+        time_grain         = "PT1M"
+        statistic          = "Average"
+        time_window        = "PT5M"
+        time_aggregation   = "Average"
+        operator           = "GreaterThan"
+        threshold          = 70
+      }
+      scale_action {
+        direction = "Increase"
+        type      = "ChangeCount"
+        value     = "1"
+        cooldown  = "PT1M"
+      }
+    }
+    rule {
+      metric_trigger {
+        metric_name        = "CpuPercentage"
+        metric_resource_id = azurerm_app_service_plan.fit-sit-asp.id
+        time_grain         = "PT1M"
+        statistic          = "Average"
+        time_window        = "PT5M"
+        time_aggregation   = "Average"
+        operator           = "LessThan"
+        threshold          = 10
+      }
+      scale_action {
+        direction = "Decrease"
+        type      = "ChangeCount"
+        value     = "1"
+        cooldown  = "PT1M"
+      }
+    }
+  }
+}

@@ -6,6 +6,21 @@ resource "azurerm_resource_group" "rg-dev-nonprod" {
   #tags = local.Common_tags    
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /*
 
 

@@ -24,7 +24,7 @@ variable "rgp_trio" {
 variable "rgp_ptc" {
   description = "Provide PTC resource gorup name"
   type        = string
-  default     = "AZRGPSOAN0007"
+  default     = "AZRGPSOAN0006"
 }
 
 variable "rgp_db" {
@@ -36,7 +36,7 @@ variable "rgp_db" {
 variable "rgp_storage" {
   description = "Provide resource gorup name for Storage"
   type        = string
-  default     = "AZRGPSOAN0008"
+  default     = "AZRGPSOAN0007"
 }
 ################################ ADIA Naming Standards ################################################################
 
@@ -44,12 +44,6 @@ variable "platform" {
   description = "Hosting Platfor Az -azure"
   type        = string
   default     = "az"
-
-}
-variable "eventgriddomain" {
-  description = "Hosting Platfor Az -azure"
-  type        = string
-  default     = "azevdsoan0001"
 
 }
 variable "object" {
@@ -110,10 +104,8 @@ variable "role" {
 }
 
 variable "env" {
-  default     = ["dev", "sit", "ext"]
-  #default = "Dev"
-  type        = list(string)
-  #type        = string
+  default     = "Dev"
+  type        = string
   description = "Provide information of environment of resource"
 }
 
@@ -124,16 +116,10 @@ variable "vnt_nonprod" {
   default     = "AZVNTSOAN0002"
 }
 
-variable "vnt_dns_servers" {
-  description = "Provide DNS Ips VNET "
-  type        = list(string)
-  default     = ["172.19.1.4", "172.19.1.5"] # 172.19.1.4 and 172.19.1.5
-}
-
 variable "nonprod_virtual_network_address_space" {
   description = "Provide all address range of network"
   type        = list(string)
-  default     = ["172.19.99.0/24", "172.19.100.0/24", "172.19.101.0/24", "172.19.102.0/24"]
+  default     = ["172.19.99.0/24", "172.19.100.0/24", "172.19.101.0/24", "172.19.102.0/24"] # "172.19.103.0/24", "172.19.104.0/24" (reserved for prod)
 }
 variable "dev_db_subnet_name" {
   description = "Provide name for DB resources name in network"
@@ -349,30 +335,6 @@ variable "hub_virtual_network_id" {
   type        = string
   default     = "/subscriptions/bc4aec72-c094-481d-ae83-5f7fe33e5db5/resourceGroups/AZRGPNETP0001_HUB/providers/Microsoft.Network/virtualNetworks/AZVNTHUBP0001"
 }
-#################################### SQL  #######################################
-#
-variable "sqlmi-dev-name" {
-  description = "Provide name of the azure SQL-MI servername in dev enironment subcription"
-  type        = string
-  default     = "azsmisoan000"
-}
-variable "sqlmi-dev-admin-name" {
-  description = "Provide name of the azure SQL-MI server administrator name in dev enironment subcription"
-  type        = string
-  default     = "mradministrator"
-}
-variable "sqlmi-dev-password" {
-  description = "Provide name of the azure SQL-MI server administrator Password in dev enironment subcription"
-  type        = string
-  default     = "thisIsDog11"
-}
-
-
-variable "adf-dev-name" {
-  description = "Provide name of he azure data factory in nonprod dev enironment subcription"
-  type        = string
-  default     = "AZADFSOAN0001"
-}
 
 #################################### Storage Account  #######################################
 variable "nonprod_storage_account" {
@@ -440,8 +402,8 @@ variable "soa_dev_asp_name" {
 variable "soa_dev_webapp_name" {
   description = "Provide name for web app  name for SOADEV MSPHosts"
   type        = set(string)
-  #default     = ["soagateway", "mspdevshared"]
-  default = ["soagateway", "mspdevshared", "mspdevaxon", "mspdev", "mspdevbbg", "mspdevedm", "mspdevff", "mspdevfit", "mspdevopd", "mspdevprecis", "mspdevshared", "mspdevtextanalyz", "mspdevtextextr", "mspdevtrio", "soadev"]
+  default     = ["mspdevaxon"]
+  #default     = ["mspdevaxon", "mspdev", "mspdevbbg", "mspdevedm", "mspdevff", "mspdevfit", "mspdevopd", "mspdevprecis", "mspdevshared", "mspdevtextanalyz", "mspdevtextextr", "mspdevtrio", "soadev"]
 }
 variable "nonprod_web_private_service_connection_name_soa_dev" {
   description = "Provide name for webapp Private service connection name for private endpoint"
@@ -613,57 +575,19 @@ variable "lvm-dev-mongo-name" {
   type        = string
   default     = "AZLVMNVMN0001"
 }
-variable "lvm-dev-mongo-name-2" {
-  description = "Provide name for linux VM which is provisining for Mongo DB"
-  type        = string
-  default     = "AZLVMNVMN0002"
-}
 variable "lvm-dev-mongo-size" {
   description = "Provide name for linux VM size which is provisining for Mongo DB"
   type        = string
-  #default     = "Standard_E8-2s_v5"
-  default = "Standard_L8s_v2"
-}
-variable "lvm-dev-mongo-size-2" {
-  description = "Provide name for linux VM size which is provisining for Mongo DB"
-  type        = string
-  default     = "Standard_B4ms"
-  #default     = "Standard_L8s_v2"
+  default     = "L8s V2"
 }
 variable "lvm-admin-username" {
   description = "Provide name for name of admin user which is provisining for Mongo DB"
   type        = string
-  default     = "atosadmin"
+  default     = "root"
   sensitive   = true
 }
 variable "lvm-admin-password" {
   description = "Provide name for name of password user which is provisining for Mongo DB"
-  type        = string
-  default     = "Atosadmin@123"
-  sensitive   = true
-}
-
-
-################################## Managment ##############################
-
-variable "wvm-dev-mgmt-name" {
-  description = "Provide name for Windows VM which is provisining for Management VM"
-  type        = string
-  default     = "AZWVMNVMN0001"
-}
-variable "wvm-dev-mgmt-size" {
-  description = "Provide name for linux VM size which is provisining for Management VM"
-  type        = string
-  default     = "Standard_B2ms"
-}
-variable "wvm-admin-username" {
-  description = "Provide name for name of admin user which is provisining for Management VM"
-  type        = string
-  default     = "atosadmin"
-  sensitive   = true
-}
-variable "wvm-admin-password" {
-  description = "Provide password for windows admin user which is provisining for Management VM"
   type        = string
   default     = "Atosadmin@123"
   sensitive   = true
