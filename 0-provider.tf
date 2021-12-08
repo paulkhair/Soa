@@ -17,7 +17,7 @@ terraform {
     storage_account_name = "azstasoan0100"
     #resource_group_name  = "myrg-3"
     #storage_account_name = "azstasoan0101"
-    container_name = "tfstate"
+    container_name = "tfstate-preprod"
     key            = "terraform.tfstate"
 
   }
